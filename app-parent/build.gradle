@@ -1,7 +1,7 @@
 plugins {
     id 'net.minecrell.licenser' version '0.3'
     id "com.github.sherter.google-java-format" version "0.6"
-    id "net.ltgt.errorprone" version "0.0.13"
+    id "net.ltgt.errorprone" version "0.6"
     id 'org.springframework.boot' version '2.2.2.RELEASE'
     id 'io.spring.dependency-management' version '1.0.8.RELEASE'
 }
@@ -58,8 +58,8 @@ dependencies {
 compileJava {
     dependsOn 'googleJavaFormat'
     options.encoding = 'UTF-8'
-    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation" << "-XepExcludedPaths:" +
-            ".*/generated-sources/.*"
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    options.errorprone.errorproneArgs << "-XepExcludedPaths:.*/generated-sources/.*"
 }
 
 task execute(type: JavaExec) {

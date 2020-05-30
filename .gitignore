@@ -7,3 +7,7 @@ target
 .gradle
 /build
 /out
+/app-parent/build/
+/main-module/build/google-java-format/0.6/
+/app-child/build/
+/app-child2/build/classes/java/main/com/example/child/

@@ -17,6 +17,8 @@
 
 package com.example.parent;
 
+import static com.example.parent.SampleConstants.*;
+
 import com.uber.cadence.DomainAlreadyExistsError;
 import com.uber.cadence.RegisterDomainRequest;
 import com.uber.cadence.activity.Activity;
@@ -32,22 +34,18 @@ import com.uber.cadence.workflow.*;
 import com.uber.m3.tally.RootScopeBuilder;
 import com.uber.m3.tally.Scope;
 import com.uber.m3.util.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TException;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.example.parent.SampleConstants.*;
-
 /** Demonstrates a child workflow. Requires a local instance of the Cadence server to be running. */
 @Slf4j
 @Component
 public class ParentWorkflow implements ApplicationRunner {
-
 
   @Override
   public void run(ApplicationArguments args) {
@@ -72,8 +70,7 @@ public class ParentWorkflow implements ApplicationRunner {
 
     Worker workerParent =
         factory.newWorker(
-            TASK_LIST_PARENT, new WorkerOptions.Builder().setMetricsScope(scope).build()
-        );
+            TASK_LIST_PARENT, new WorkerOptions.Builder().setMetricsScope(scope).build());
 
     workerParent.registerWorkflowImplementationTypes(GreetingWorkflowImpl.class);
     workerParent.registerActivitiesImplementations(new ParentActivitiesImpl());
@@ -148,10 +145,11 @@ public class ParentWorkflow implements ApplicationRunner {
   static class ParentActivitiesImpl implements ParentActivities {
     @Override
     public String composeParentGreeting(int activityIdx) {
-//      System.out.printf("[%d] Parent activity done\n", activityIdx);
+      //      System.out.printf("[%d] Parent activity done\n", activityIdx);
 
-      return String.format("Finished parent activity: idx: [%d], activity id: [%s], task: [%s]", activityIdx,
-              Activity.getTask().getActivityId(), new String(Activity.getTaskToken()));
+      return String.format(
+          "Finished parent activity: idx: [%d], activity id: [%s], task: [%s]",
+          activityIdx, Activity.getTask().getActivityId(), new String(Activity.getTaskToken()));
     }
   }
 
@@ -172,23 +170,21 @@ public class ParentWorkflow implements ApplicationRunner {
 
       // Do something else here.
       Promise<List<String>> parentPromises = runParentActivities();
-      System.out.println("Got result in parent: " + String.join(";\n", parentPromises.get()) + "\n");
+      System.out.println(
+          "Got result in parent: " + String.join(";\n", parentPromises.get()) + "\n");
 
       return greeting.get(); // blocks waiting for the child to complete.
     }
 
     private Promise<List<String>> runParentActivities() {
       RetryOptions ro =
-              new RetryOptions.Builder()
-                      .setInitialInterval(java.time.Duration.ofSeconds(30))
-                      .setMaximumInterval(java.time.Duration.ofSeconds(30))
-                      .setMaximumAttempts(2)
-                      .build();
+          new RetryOptions.Builder()
+              .setInitialInterval(java.time.Duration.ofSeconds(30))
+              .setMaximumInterval(java.time.Duration.ofSeconds(30))
+              .setMaximumAttempts(2)
+              .build();
       ActivityOptions ao =
-              new ActivityOptions.Builder()
-                      .setTaskList(TASK_LIST_PARENT)
-                      .setRetryOptions(ro)
-                      .build();
+          new ActivityOptions.Builder().setTaskList(TASK_LIST_PARENT).setRetryOptions(ro).build();
 
       List<Promise<String>> parentActivities = new ArrayList<>();
       for (int i = 0; i < 4; i++) {
