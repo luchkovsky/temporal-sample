@@ -17,7 +17,9 @@
 
 package com.example.parent;
 
-import static com.example.parent.SampleConstants.*;
+import static com.example.parent.SampleConstants.DOMAIN;
+import static com.example.parent.SampleConstants.POLL_THREAD_COUNT;
+import static com.example.parent.SampleConstants.TASK_LIST_COUNT;
 
 import com.uber.cadence.DomainAlreadyExistsError;
 import com.uber.cadence.RegisterDomainRequest;
@@ -25,12 +27,19 @@ import com.uber.cadence.activity.Activity;
 import com.uber.cadence.activity.ActivityMethod;
 import com.uber.cadence.activity.ActivityOptions;
 import com.uber.cadence.client.WorkflowClient;
-import com.uber.cadence.common.RetryOptions;
+import com.uber.cadence.client.WorkflowOptions;
+import com.uber.cadence.internal.worker.PollerOptions;
 import com.uber.cadence.serviceclient.IWorkflowService;
 import com.uber.cadence.serviceclient.WorkflowServiceTChannel;
 import com.uber.cadence.worker.Worker;
+import com.uber.cadence.worker.Worker.FactoryOptions;
+import com.uber.cadence.worker.Worker.FactoryOptions.Builder;
 import com.uber.cadence.worker.WorkerOptions;
-import com.uber.cadence.workflow.*;
+import com.uber.cadence.workflow.Async;
+import com.uber.cadence.workflow.ChildWorkflowOptions;
+import com.uber.cadence.workflow.Promise;
+import com.uber.cadence.workflow.Workflow;
+import com.uber.cadence.workflow.WorkflowMethod;
 import com.uber.m3.tally.RootScopeBuilder;
 import com.uber.m3.tally.Scope;
 import com.uber.m3.util.Duration;
@@ -45,7 +54,7 @@ import org.springframework.stereotype.Component;
 /** Demonstrates a child workflow. Requires a local instance of the Cadence server to be running. */
 @Slf4j
 @Component
-public class ParentWorkflow implements ApplicationRunner {
+public class ParentApplicationWorkflow implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) {
@@ -61,19 +70,28 @@ public class ParentWorkflow implements ApplicationRunner {
             .reporter(new CustomCadenceClientStatsReporter())
             .reportEvery(Duration.ofSeconds(1));
 
-    Worker.Factory factory =
-        new Worker.Factory(
-            "127.0.0.1",
-            7933,
-            DOMAIN,
-            new Worker.FactoryOptions.Builder().setMetricScope(scope).build());
+    PollerOptions pollerOptions =
+        new PollerOptions.Builder().setPollThreadCount(POLL_THREAD_COUNT).build();
 
-    Worker workerParent =
-        factory.newWorker(
-            TASK_LIST_PARENT, new WorkerOptions.Builder().setMetricsScope(scope).build());
+    FactoryOptions factoryOptions =
+        new Builder().setStickyWorkflowPollerOptions(pollerOptions).setMetricScope(scope).build();
 
-    workerParent.registerWorkflowImplementationTypes(GreetingWorkflowImpl.class);
-    workerParent.registerActivitiesImplementations(new ParentActivitiesImpl());
+    Worker.Factory factory = new Worker.Factory("127.0.0.1", 7933, DOMAIN, factoryOptions);
+
+    for (int i = 0; i < TASK_LIST_COUNT; i++) {
+      String taskList = SampleConstants.getTaskListParent(i);
+      WorkerOptions workerOptions =
+          new WorkerOptions.Builder()
+              .setWorkflowPollerOptions(pollerOptions)
+              .setActivityPollerOptions(pollerOptions)
+              .setMetricsScope(scope)
+              .build();
+
+      Worker workerParent = factory.newWorker(taskList, workerOptions);
+
+      workerParent.registerWorkflowImplementationTypes(GreetingWorkflowImpl.class);
+      workerParent.registerActivitiesImplementations(new ParentActivitiesImpl());
+    }
 
     // Start listening to the workflow and activity task lists.
     factory.start();
@@ -97,7 +115,6 @@ public class ParentWorkflow implements ApplicationRunner {
 
     } catch (DomainAlreadyExistsError e) {
       log.error("Domain \"" + DOMAIN + "\" is already registered");
-
     } catch (TException e) {
       log.error("Error occurred", e);
     }
@@ -111,10 +128,12 @@ public class ParentWorkflow implements ApplicationRunner {
     GreetingWorkflow parentWorkflow;
 
     while (true) {
-      parentWorkflow = workflowClient.newWorkflowStub(GreetingWorkflow.class);
+      String taskList = SampleConstants.getTaskListParent();
+      WorkflowOptions options = new WorkflowOptions.Builder().setTaskList(taskList).build();
+      parentWorkflow = workflowClient.newWorkflowStub(GreetingWorkflow.class, options);
       WorkflowClient.start(parentWorkflow::getGreeting, "World");
       try {
-        Thread.sleep(500);
+        Thread.sleep(50);
 
       } catch (InterruptedException e) {
         log.error("Error occurred", e);
@@ -125,24 +144,28 @@ public class ParentWorkflow implements ApplicationRunner {
 
   /** The parent workflow interface. */
   public interface GreetingWorkflow {
+
     /** @return greeting string */
-    @WorkflowMethod(executionStartToCloseTimeoutSeconds = 60000, taskList = TASK_LIST_PARENT)
+    @WorkflowMethod(executionStartToCloseTimeoutSeconds = 60000)
     String getGreeting(String name);
   }
 
   /** The child workflow interface. */
   public interface GreetingChild {
+
     /** @return greeting string */
-    @WorkflowMethod(executionStartToCloseTimeoutSeconds = 60000, taskList = TASK_LIST_CHILD)
+    @WorkflowMethod(executionStartToCloseTimeoutSeconds = 60000)
     String composeGreeting(String greeting, String name);
   }
 
   public interface ParentActivities {
+
     @ActivityMethod(scheduleToStartTimeoutSeconds = 60000, startToCloseTimeoutSeconds = 60)
     String composeParentGreeting(int activityIdx);
   }
 
   static class ParentActivitiesImpl implements ParentActivities {
+
     @Override
     public String composeParentGreeting(int activityIdx) {
       //      System.out.printf("[%d] Parent activity done\n", activityIdx);
@@ -158,9 +181,9 @@ public class ParentWorkflow implements ApplicationRunner {
 
     @Override
     public String getGreeting(String name) {
-      // Define tasklist for child
+      String taskList = SampleConstants.getTaskListChild();
       ChildWorkflowOptions options =
-          new ChildWorkflowOptions.Builder().setTaskList(TASK_LIST_CHILD).build();
+          new ChildWorkflowOptions.Builder().setTaskList(taskList).build();
 
       // Workflows are stateful. So a new stub must be created for each new child.
       GreetingChild child = Workflow.newChildWorkflowStub(GreetingChild.class, options);
@@ -177,17 +200,11 @@ public class ParentWorkflow implements ApplicationRunner {
     }
 
     private Promise<List<String>> runParentActivities() {
-      RetryOptions ro =
-          new RetryOptions.Builder()
-              .setInitialInterval(java.time.Duration.ofSeconds(30))
-              .setMaximumInterval(java.time.Duration.ofSeconds(30))
-              .setMaximumAttempts(2)
-              .build();
-      ActivityOptions ao =
-          new ActivityOptions.Builder().setTaskList(TASK_LIST_PARENT).setRetryOptions(ro).build();
-
       List<Promise<String>> parentActivities = new ArrayList<>();
-      for (int i = 0; i < 4; i++) {
+      for (int i = 0; i < 1; i++) {
+        String taskList = SampleConstants.getTaskListParent();
+        ActivityOptions ao = new ActivityOptions.Builder().setTaskList(taskList).build();
+
         ParentActivities activity = Workflow.newActivityStub(ParentActivities.class, ao);
         parentActivities.add(Async.function(activity::composeParentGreeting, i));
       }

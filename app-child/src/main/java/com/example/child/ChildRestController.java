@@ -1,6 +1,8 @@
 package com.example.child;
 
+import com.example.parent.SampleConstants;
 import com.uber.cadence.client.ActivityCompletionClient;
+import com.uber.cadence.client.ActivityCompletionException;
 import com.uber.cadence.client.WorkflowClient;
 import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -25,9 +27,12 @@ public class ChildRestController {
   public ResponseEntity<byte[]> handle(@RequestBody byte[] taskToken) {
     if (completionClient != null) {
       String response = "This is the response";
-      completionClient.complete(taskToken, "THIS IS THE END!");
-      log.info("Complete activity!");
-
+      try {
+        completionClient.complete(taskToken, "THIS IS THE END!");
+        log.info("Complete activity!");
+      } catch (ActivityCompletionException e) {
+        log.error("Can't complete activity!", e);
+      }
       return ResponseEntity.ok().body(response.getBytes());
     }
 

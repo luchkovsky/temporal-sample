@@ -17,19 +17,21 @@
 
 package com.example.child;
 
-import static com.example.child.SampleConstants.DOMAIN;
-import static com.example.child.SampleConstants.TASK_LIST_CHILD;
+import static com.example.parent.SampleConstants.*;
 
+import com.example.parent.SampleConstants;
 import com.uber.cadence.DomainAlreadyExistsError;
 import com.uber.cadence.RegisterDomainRequest;
 import com.uber.cadence.activity.Activity;
 import com.uber.cadence.activity.ActivityMethod;
 import com.uber.cadence.activity.ActivityOptions;
-import com.uber.cadence.common.RetryOptions;
+import com.uber.cadence.internal.worker.PollerOptions;
 import com.uber.cadence.serviceclient.IWorkflowService;
 import com.uber.cadence.serviceclient.WorkflowServiceTChannel;
 import com.uber.cadence.worker.Worker;
+import com.uber.cadence.worker.Worker.FactoryOptions;
 import com.uber.cadence.worker.WorkerOptions;
+import com.uber.cadence.worker.WorkerOptions.Builder;
 import com.uber.cadence.workflow.*;
 import com.uber.m3.tally.RootScopeBuilder;
 import com.uber.m3.tally.Scope;
@@ -45,11 +47,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-/**
- * Demonstrates a child workflow. Requires a local instance of the Cadence server to be running.
- *
- * <p>Based on HelloChildWithExternalRest class
- */
 @Component
 @Slf4j
 public class ChildWorkflow implements ApplicationRunner {
@@ -67,18 +64,31 @@ public class ChildWorkflow implements ApplicationRunner {
             .reporter(new CustomCadenceClientStatsReporter())
             .reportEvery(Duration.ofSeconds(1));
 
-    Worker.Factory factory =
-        new Worker.Factory(
-            "127.0.0.1",
-            7933,
-            DOMAIN,
-            new Worker.FactoryOptions.Builder().setMetricScope(scope).build());
+    PollerOptions pollerOptions =
+        new PollerOptions.Builder().setPollThreadCount(POLL_THREAD_COUNT).build();
 
-    Worker workerChild =
-        factory.newWorker(
-            TASK_LIST_CHILD, new WorkerOptions.Builder().setMetricsScope(scope).build());
-    workerChild.registerWorkflowImplementationTypes(GreetingChildImpl.class);
-    workerChild.registerActivitiesImplementations(new GreetingActivitiesImpl());
+    FactoryOptions factoryOptions =
+        new FactoryOptions.Builder()
+            .setStickyWorkflowPollerOptions(pollerOptions)
+            .setMetricScope(scope)
+            .build();
+
+    Worker.Factory factory = new Worker.Factory("127.0.0.1", 7933, DOMAIN, factoryOptions);
+
+    for (int i = 0; i < TASK_LIST_COUNT; i++) {
+      String taskList = SampleConstants.getTaskListChild(i);
+      WorkerOptions workerOptions =
+          new Builder()
+              .setMetricsScope(scope)
+              .setActivityPollerOptions(pollerOptions)
+              .setWorkflowPollerOptions(pollerOptions)
+              .build();
+
+      Worker workerChild = factory.newWorker(taskList, workerOptions);
+
+      workerChild.registerWorkflowImplementationTypes(GreetingChildImpl.class);
+      workerChild.registerActivitiesImplementations(new GreetingActivitiesImpl());
+    }
 
     // Start listening to the workflow and activity task lists.
     factory.start();
@@ -111,7 +121,7 @@ public class ChildWorkflow implements ApplicationRunner {
   /** The child workflow interface. */
   public interface GreetingChild {
     /** @return greeting string */
-    @WorkflowMethod(executionStartToCloseTimeoutSeconds = 60000, taskList = TASK_LIST_CHILD)
+    @WorkflowMethod(executionStartToCloseTimeoutSeconds = 60000)
     String composeGreeting(String greeting, String name);
   }
 
@@ -126,18 +136,15 @@ public class ChildWorkflow implements ApplicationRunner {
    * Cadence library to be able to create instances.
    */
   public static class GreetingChildImpl implements GreetingChild {
+
     public String composeGreeting(String greeting, String name) {
       long startSW = System.nanoTime();
       List<Promise<String>> activities = new ArrayList<>();
-      RetryOptions ro =
-          new RetryOptions.Builder()
-              .setInitialInterval(java.time.Duration.ofSeconds(30))
-              .setMaximumInterval(java.time.Duration.ofSeconds(30))
-              .setMaximumAttempts(2)
-              .build();
-      ActivityOptions ao =
-          new ActivityOptions.Builder().setTaskList(TASK_LIST_CHILD).setRetryOptions(ro).build();
-      for (int i = 0; i < 10; i++) {
+
+      for (int i = 0; i < ACTIVITIES_COUNT; i++) {
+        String taskList = getTaskListChild();
+        ActivityOptions ao = new ActivityOptions.Builder().setTaskList(taskList).build();
+
         GreetingActivities activity = Workflow.newActivityStub(GreetingActivities.class, ao);
         activities.add(Async.function(activity::composeGreeting, greeting + i, name));
       }
