@@ -1,5 +1,7 @@
 version: '3.5'
-
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
 services:
 
   cassandra:
@@ -11,11 +13,13 @@ services:
     image: temporalio/auto-setup:0.23.1
     ports:
       - "7233:7233"
+      - "8005:8005"
     environment:
       - "CASSANDRA_SEEDS=cassandra"
       - "DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml"
     depends_on:
       - cassandra
+
   temporal-web:
     image: temporalio/web:0.23.2
     environment:
@@ -46,19 +50,17 @@ services:
       org.label-schema.group: "monitoring"
 
   grafana:
-    image: grafana/grafana:6.7.3
-    container_name: grafana
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning
-    environment:
-      - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
-      - GF_USERS_ALLOW_SIGN_UP=false
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    labels:
-      org.label-schema.group: "monitoring"
-
-  "prometheus_data:/prometheus:rw"
+      image: grafana/grafana:6.7.3
+      container_name: grafana
+      volumes:
+        - grafana_data:/var/lib/grafana
+        - ./grafana/provisioning:/etc/grafana/provisioning
+      environment:
+        - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
+        - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+        - GF_USERS_ALLOW_SIGN_UP=false
+      restart: unless-stopped
+      ports:
+        - "3000:3000"
+      labels:
+        org.label-schema.group: "monitoring"

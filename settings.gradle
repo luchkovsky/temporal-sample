@@ -1,5 +1,5 @@
-rootProject.name = 'cadence-samples'
+rootProject.name = 'temporal-samples'
 include 'app-parent'
 include 'app-child'
 include 'app-child2'
-// include 'main-module'
+

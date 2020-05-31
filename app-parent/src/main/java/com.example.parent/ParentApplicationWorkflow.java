@@ -19,6 +19,8 @@ package com.example.parent;
 
 import static com.example.parent.SampleConstants.TASK_LIST_COUNT;
 
+import com.uber.m3.tally.RootScopeBuilder;
+import com.uber.m3.tally.Scope;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
@@ -26,6 +28,7 @@ import io.temporal.activity.ActivityOptions;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
@@ -56,8 +59,16 @@ public class ParentApplicationWorkflow implements ApplicationRunner {
 
   private void startFactory() {
 
+    Scope scope =
+        new RootScopeBuilder()
+            .reporter(new CustomCadenceClientStatsReporter())
+            .reportEvery(com.uber.m3.util.Duration.ofSeconds(1));
+
+    WorkflowServiceStubsOptions stubsOptions =
+        WorkflowServiceStubsOptions.newBuilder().setMetricsScope(scope).build();
+
     // gRPC stubs wrapper that talks to the local docker instance of temporal service.
-    WorkflowServiceStubs service = WorkflowServiceStubs.newInstance();
+    WorkflowServiceStubs service = WorkflowServiceStubs.newInstance(stubsOptions);
 
     // client that can be used to start and signal workflows
     WorkflowClient client = WorkflowClient.newInstance(service);
@@ -95,9 +106,10 @@ public class ParentApplicationWorkflow implements ApplicationRunner {
       WorkflowOptions options = WorkflowOptions.newBuilder().setTaskList(taskList).build();
 
       parentWorkflow = client.newWorkflowStub(GreetingWorkflow.class, options);
+
       WorkflowClient.start(parentWorkflow::getGreeting, "World");
       try {
-        Thread.sleep(500);
+        Thread.sleep(10);
 
       } catch (InterruptedException e) {
         log.error("Error occurred", e);
