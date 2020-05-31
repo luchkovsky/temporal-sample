@@ -17,32 +17,32 @@
 
 package com.example.child;
 
-import static com.example.parent.SampleConstants.*;
+import static com.example.parent.SampleConstants.ACTIVITIES_COUNT;
+import static com.example.parent.SampleConstants.TASK_LIST_COUNT;
+import static com.example.parent.SampleConstants.getTaskListChild;
 
 import com.example.parent.SampleConstants;
-import com.uber.cadence.DomainAlreadyExistsError;
-import com.uber.cadence.RegisterDomainRequest;
-import com.uber.cadence.activity.Activity;
-import com.uber.cadence.activity.ActivityMethod;
-import com.uber.cadence.activity.ActivityOptions;
-import com.uber.cadence.internal.worker.PollerOptions;
-import com.uber.cadence.serviceclient.IWorkflowService;
-import com.uber.cadence.serviceclient.WorkflowServiceTChannel;
-import com.uber.cadence.worker.Worker;
-import com.uber.cadence.worker.Worker.FactoryOptions;
-import com.uber.cadence.worker.WorkerOptions;
-import com.uber.cadence.worker.WorkerOptions.Builder;
-import com.uber.cadence.workflow.*;
-import com.uber.m3.tally.RootScopeBuilder;
-import com.uber.m3.tally.Scope;
 import com.uber.m3.util.Duration;
+import io.temporal.activity.Activity;
+import io.temporal.activity.ActivityInterface;
+import io.temporal.activity.ActivityMethod;
+import io.temporal.activity.ActivityOptions;
+import io.temporal.client.WorkflowClient;
+import io.temporal.serviceclient.WorkflowServiceStubs;
+import io.temporal.worker.Worker;
+import io.temporal.worker.WorkerFactory;
+import io.temporal.worker.WorkerOptions;
+import io.temporal.workflow.Async;
+import io.temporal.workflow.Promise;
+import io.temporal.workflow.Workflow;
+import io.temporal.workflow.WorkflowInterface;
+import io.temporal.workflow.WorkflowMethod;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.thrift.TException;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -53,36 +53,23 @@ public class ChildWorkflow implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) {
-    registerDomain();
+
     startFactory();
   }
 
   private void startFactory() {
-    // Start a worker that hosts both parent and child workflow implementations.
-    Scope scope =
-        new RootScopeBuilder()
-            .reporter(new CustomCadenceClientStatsReporter())
-            .reportEvery(Duration.ofSeconds(1));
 
-    PollerOptions pollerOptions =
-        new PollerOptions.Builder().setPollThreadCount(POLL_THREAD_COUNT).build();
+    // gRPC stubs wrapper that talks to the local docker instance of temporal service.
+    WorkflowServiceStubs service = WorkflowServiceStubs.newInstance();
+    // client that can be used to start and signal workflows
+    WorkflowClient client = WorkflowClient.newInstance(service);
 
-    FactoryOptions factoryOptions =
-        new FactoryOptions.Builder()
-            .setStickyWorkflowPollerOptions(pollerOptions)
-            .setMetricScope(scope)
-            .build();
-
-    Worker.Factory factory = new Worker.Factory("127.0.0.1", 7933, DOMAIN, factoryOptions);
+    // worker factory that can be used to create workers for specific task lists
+    WorkerFactory factory = WorkerFactory.newInstance(client);
 
     for (int i = 0; i < TASK_LIST_COUNT; i++) {
       String taskList = SampleConstants.getTaskListChild(i);
-      WorkerOptions workerOptions =
-          new Builder()
-              .setMetricsScope(scope)
-              .setActivityPollerOptions(pollerOptions)
-              .setWorkflowPollerOptions(pollerOptions)
-              .build();
+      WorkerOptions workerOptions = WorkerOptions.newBuilder().build();
 
       Worker workerChild = factory.newWorker(taskList, workerOptions);
 
@@ -94,40 +81,18 @@ public class ChildWorkflow implements ApplicationRunner {
     factory.start();
   }
 
-  private void registerDomain() {
-    IWorkflowService cadenceService = new WorkflowServiceTChannel();
-    RegisterDomainRequest request = new RegisterDomainRequest();
-    request.setDescription("Java Samples");
-    request.setEmitMetric(false);
-    request.setName(DOMAIN);
-    int retentionPeriodInDays = 1;
-    request.setWorkflowExecutionRetentionPeriodInDays(retentionPeriodInDays);
-    try {
-      cadenceService.RegisterDomain(request);
-      System.out.println(
-          "Successfully registered domain \""
-              + DOMAIN
-              + "\" with retentionDays="
-              + retentionPeriodInDays);
-
-    } catch (DomainAlreadyExistsError e) {
-      log.error("Domain \"" + DOMAIN + "\" is already registered");
-
-    } catch (TException e) {
-      log.error("Error occurred", e);
-    }
-  }
-
   /** The child workflow interface. */
+  @WorkflowInterface
   public interface GreetingChild {
-    /** @return greeting string */
-    @WorkflowMethod(executionStartToCloseTimeoutSeconds = 60000)
+
+    @WorkflowMethod
     String composeGreeting(String greeting, String name);
   }
 
-  /** Activity interface is just to call external service and doNotCompleteActivity. */
+  @ActivityInterface
   public interface GreetingActivities {
-    @ActivityMethod(scheduleToStartTimeoutSeconds = 60000, startToCloseTimeoutSeconds = 60)
+
+    @ActivityMethod
     String composeGreeting(String greeting, String name);
   }
 
@@ -139,16 +104,21 @@ public class ChildWorkflow implements ApplicationRunner {
 
     public String composeGreeting(String greeting, String name) {
       long startSW = System.nanoTime();
-      List<Promise<String>> activities = new ArrayList<>();
+      List<Promise<?>> activities = new ArrayList<>();
 
       for (int i = 0; i < ACTIVITIES_COUNT; i++) {
         String taskList = getTaskListChild();
-        ActivityOptions ao = new ActivityOptions.Builder().setTaskList(taskList).build();
+        ActivityOptions ao =
+            ActivityOptions.newBuilder()
+                .setTaskList(taskList)
+                .setScheduleToCloseTimeout(java.time.Duration.ofSeconds(60))
+                .build();
 
         GreetingActivities activity = Workflow.newActivityStub(GreetingActivities.class, ao);
         activities.add(Async.function(activity::composeGreeting, greeting + i, name));
       }
-      Promise greetingActivities = Promise.allOf(activities);
+
+      Promise<Void> greetingActivities = Promise.allOf(activities);
       String result = greetingActivities.get() + " " + name + "!";
       System.out.println(
           "Duration of childwf - " + Duration.between(startSW, System.nanoTime()).getSeconds());

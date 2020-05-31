@@ -1,46 +1,29 @@
-version: '3'
-volumes:
-  prometheus_data: {}
-  grafana_data: {}
-  cadence_data: {}
+version: '3.5'
+
 services:
+
   cassandra:
     image: cassandra:3.11
     ports:
       - "9042:9042"
-  #  statsd:
-  #    image: graphiteapp/graphite-statsd
-  #    ports:
-  #      - "8080:80"
-  #      - "2003:2003"
-  #      - "8125:8125"
-  #      - "8126:8126"
-  cadence:
-    image: ubercadence/server:0.12.0-auto-setup
 
+  temporal:
+    image: temporalio/auto-setup:0.23.1
     ports:
-      - "7933:7933"
-      - "7934:7934"
-      - "7935:7935"
-      - "7939:7939"
-      - "8005:8005"
-    volumes:
-      - ./cadence:/config/dynamicconfig_local
-      - cadence_data:/cadence
+      - "7233:7233"
     environment:
       - "CASSANDRA_SEEDS=cassandra"
-      - "DYNAMIC_CONFIG_FILE_PATH=/config/dynamicconfig_local/development_local.yaml"
-      - "PROMETHEUS_ENDPOINT=$BIND_ON_IP:8005"
+      - "DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml"
     depends_on:
       - cassandra
-  cadence-web:
-    image: ubercadence/web:3.9.0
+  temporal-web:
+    image: temporalio/web:0.23.2
     environment:
-      - "CADENCE_TCHANNEL_PEERS=cadence:7933"
+      - "TEMPORAL_GRPC_ENDPOINT=temporal:7233"
     ports:
       - "8088:8088"
     depends_on:
-      - cadence
+      - temporal
 
   prometheus:
     image: prom/prometheus:v2.18.1
@@ -77,3 +60,5 @@ services:
       - "3000:3000"
     labels:
       org.label-schema.group: "monitoring"
+
+  "prometheus_data:/prometheus:rw"

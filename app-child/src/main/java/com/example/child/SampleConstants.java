@@ -6,7 +6,7 @@ import java.util.StringJoiner;
 public class SampleConstants {
 
   public static final int POLL_THREAD_COUNT = 10;
-  public static final int TASK_LIST_COUNT = 1;
+  public static final int TASK_LIST_COUNT = 10;
   public static final int ACTIVITIES_COUNT = 10;
 
   public static final String DOMAIN = "sample";

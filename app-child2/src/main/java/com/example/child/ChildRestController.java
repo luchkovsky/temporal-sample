@@ -1,9 +1,9 @@
 package com.example.child;
 
-import com.example.parent.SampleConstants;
-import com.uber.cadence.client.ActivityCompletionClient;
-import com.uber.cadence.client.ActivityCompletionException;
-import com.uber.cadence.client.WorkflowClient;
+import io.temporal.client.ActivityCompletionClient;
+import io.temporal.client.ActivityCompletionException;
+import io.temporal.client.WorkflowClient;
+import io.temporal.serviceclient.WorkflowServiceStubs;
 import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +17,8 @@ public class ChildRestController {
 
   @PostConstruct
   void init() {
-    WorkflowClient workflowClient =
-        WorkflowClient.newInstance("127.0.0.1", 7933, SampleConstants.DOMAIN);
+    WorkflowServiceStubs service = WorkflowServiceStubs.newInstance();
+    WorkflowClient workflowClient = WorkflowClient.newInstance(service);
     completionClient = workflowClient.newActivityCompletionClient();
   }
 
