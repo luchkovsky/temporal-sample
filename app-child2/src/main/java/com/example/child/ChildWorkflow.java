@@ -31,8 +31,10 @@ import io.temporal.activity.ActivityMethod;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
+import io.temporal.worker.WorkerFactoryOptions;
 import io.temporal.worker.WorkerOptions;
 import io.temporal.workflow.Async;
 import io.temporal.workflow.Promise;
@@ -61,19 +63,22 @@ public class ChildWorkflow implements ApplicationRunner {
 
   private void startFactory() {
 
+    Scope scope =
+        new RootScopeBuilder()
+            .reporter(new CustomCadenceClientStatsReporter())
+            .reportEvery(com.uber.m3.util.Duration.ofSeconds(1));
+
+    WorkerFactoryOptions factoryOptions = WorkerFactoryOptions.newBuilder().build();
+
+    WorkflowServiceStubsOptions stubsOptions =
+        WorkflowServiceStubsOptions.newBuilder().setMetricsScope(scope).build();
     // gRPC stubs wrapper that talks to the local docker instance of temporal service.
-    WorkflowServiceStubs service = WorkflowServiceStubs.newInstance();
+    WorkflowServiceStubs service = WorkflowServiceStubs.newInstance(stubsOptions);
     // client that can be used to start and signal workflows
     WorkflowClient client = WorkflowClient.newInstance(service);
 
     // worker factory that can be used to create workers for specific task lists
     WorkerFactory factory = WorkerFactory.newInstance(client);
-
-    // Start a worker that hosts both parent and child workflow implementations.
-    Scope scope =
-        new RootScopeBuilder()
-            .reporter(new CustomCadenceClientStatsReporter())
-            .reportEvery(Duration.ofSeconds(1));
 
     for (int i = 0; i < TASK_LIST_COUNT; i++) {
       String taskList = SampleConstants.getTaskListChild(i);
@@ -89,7 +94,7 @@ public class ChildWorkflow implements ApplicationRunner {
     factory.start();
   }
 
-
+  /** The child workflow interface. */
   @WorkflowInterface
   public interface GreetingChild {
 
@@ -116,7 +121,11 @@ public class ChildWorkflow implements ApplicationRunner {
 
       for (int i = 0; i < ACTIVITIES_COUNT; i++) {
         String taskList = getTaskListChild();
-        ActivityOptions ao = ActivityOptions.newBuilder().setTaskList(taskList).build();
+        ActivityOptions ao =
+            ActivityOptions.newBuilder()
+                .setTaskList(taskList)
+                .setScheduleToCloseTimeout(java.time.Duration.ofSeconds(60))
+                .build();
 
         GreetingActivities activity = Workflow.newActivityStub(GreetingActivities.class, ao);
         activities.add(Async.function(activity::composeGreeting, greeting + i, name));

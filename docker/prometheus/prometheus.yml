@@ -35,11 +35,25 @@ scrape_configs:
       - targets: ['host.docker.internal:8092']
 #      - targets: ['127.0.0.1:8092']
 
-  - job_name: 'hello-parent-application'
+  - job_name: 'hello-child2-application'
     metrics_path: '/actuator/prometheus'
     scrape_interval: 5s
     static_configs:
       - targets: ['host.docker.internal:8093']
+  #      - targets: ['127.0.0.1:8092']
+
+  - job_name: 'hello-parent-application'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['host.docker.internal:8095']
+#      - targets: ['127.0.0.1:8095']
+
+  - job_name: 'hello-parent2-application'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['host.docker.internal:8095']
 #      - targets: ['127.0.0.1:8095']
 
   - job_name: 'temporal'

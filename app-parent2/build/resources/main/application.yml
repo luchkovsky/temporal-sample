@@ -1,0 +1,9 @@
+server:
+  port: 8095
+
+management.endpoint.metrics.enabled: 'true'
+management.endpoint.prometheus.enabled: 'true'
+management.endpoint.health.enabled: 'true'
+management.endpoint.health.show-details: always
+management.endpoints.web.exposure.include: '*'
+management.metrics.export.prometheus.enabled: 'true'
