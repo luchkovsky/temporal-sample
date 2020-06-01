@@ -2,6 +2,7 @@ version: '3.5'
 volumes:
   prometheus_data: {}
   grafana_data: {}
+  temporal_data: {}
 services:
 
   cassandra:
@@ -13,10 +14,17 @@ services:
     image: temporalio/auto-setup:0.23.1
     ports:
       - "7233:7233"
+      - "7934:7934"
+      - "7935:7935"
+      - "7939:7939"
       - "8005:8005"
+    volumes:
+      - ./temporal:/config/dynamicconfig
+      - temporal_data:/temporal
     environment:
       - "CASSANDRA_SEEDS=cassandra"
-      - "DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml"
+      - "DYNAMIC_CONFIG_FILE_PATH=/config/dynamicconfig/development_local.yaml"
+      - "PROMETHEUS_ENDPOINT=$BIND_ON_IP:8005"
     depends_on:
       - cassandra
 

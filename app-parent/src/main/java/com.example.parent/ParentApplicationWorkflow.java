@@ -109,7 +109,7 @@ public class ParentApplicationWorkflow implements ApplicationRunner {
 
       WorkflowClient.start(parentWorkflow::getGreeting, "World");
       try {
-        Thread.sleep(10);
+        Thread.sleep(5);
 
       } catch (InterruptedException e) {
         log.error("Error occurred", e);

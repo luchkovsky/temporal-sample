@@ -1,0 +1,1237 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": "-- Grafana --",
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "editable": true,
+    "gnetId": null,
+    "graphTooltip": 0,
+    "id": 4,
+    "iteration": 1591014155392,
+    "links": [],
+    "panels": [
+        {
+            "collapsed": true,
+            "datasource": null,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 21,
+            "panels": [],
+            "title": "Matcher",
+            "type": "row"
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 0,
+                "y": 1
+            },
+            "hiddenSeries": false,
+            "id": 23,
+            "interval": "",
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": true,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "null",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "sum by (operation) (rate(poll_success_sync[5m])) ",
+                    "format": "time_series",
+                    "hide": false,
+                    "interval": "",
+                    "intervalFactor": 1,
+                    "legendFormat": "Success sync",
+                    "refId": "A"
+                },
+                {
+                    "expr": "sum by (operation) (rate(poll_success[5m]))",
+                    "format": "time_series",
+                    "hide": false,
+                    "intervalFactor": 1,
+                    "legendFormat": "Success",
+                    "refId": "B"
+                },
+                {
+                    "expr": "sum by (operation) (rate(poll_timeouts[5m]))",
+                    "format": "time_series",
+                    "hide": false,
+                    "intervalFactor": 1,
+                    "legendFormat": "Timeout",
+                    "refId": "C"
+                },
+                {
+                    "expr": "sum(rate(sync_throttle_count[5m]))",
+                    "format": "time_series",
+                    "intervalFactor": 1,
+                    "legendFormat": "Sync_Throttle",
+                    "refId": "D"
+                },
+                {
+                    "expr": "temporal_activity_poll_succeed_total",
+                    "format": "time_series",
+                    "hide": true,
+                    "interval": "",
+                    "intervalFactor": 1,
+                    "legendFormat": "Sync_Throttle",
+                    "refId": "E"
+                },
+                {
+                    "expr": "temporal_poller_start_total",
+                    "format": "time_series",
+                    "hide": true,
+                    "interval": "",
+                    "intervalFactor": 1,
+                    "legendFormat": "Sync_Throttle",
+                    "refId": "F"
+                },
+                {
+                    "expr": "temp",
+                    "format": "time_series",
+                    "hide": true,
+                    "interval": "",
+                    "intervalFactor": 1,
+                    "legendFormat": "Sync_Throttle",
+                    "refId": "G"
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Matcher poll",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 12,
+                "y": 1
+            },
+            "hiddenSeries": false,
+            "id": 24,
+            "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": true,
+                "max": true,
+                "min": true,
+                "show": true,
+                "total": false,
+                "values": true
+            },
+            "lines": true,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "null",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": " sum by (domain) (rate(poll_success_sync{app=\"cadence-matching\"}[5m]))",
+                    "format": "time_series",
+                    "hide": false,
+                    "intervalFactor": 1,
+                    "legendFormat": "Success sync: {{domain}}",
+                    "refId": "A"
+                },
+                {
+                    "expr": " sum by (domain) (rate(poll_success{app=\"cadence-matching\"}[5m]))",
+                    "format": "time_series",
+                    "hide": false,
+                    "intervalFactor": 1,
+                    "legendFormat": "Success: {{domain}}",
+                    "refId": "B"
+                },
+                {
+                    "expr": " sum by (domain) (rate(poll_timeouts{app=\"cadence-matching\"}[5m]))",
+                    "format": "time_series",
+                    "hide": false,
+                    "intervalFactor": 1,
+                    "legendFormat": "Timeout: {{domain}}",
+                    "refId": "C"
+                },
+                {
+                    "expr": "sum(rate(sync_throttle_count[5m]))",
+                    "format": "time_series",
+                    "intervalFactor": 1,
+                    "legendFormat": "Sync_Throttle",
+                    "refId": "D"
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Matcher poll",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "datasource": null,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 10
+            },
+            "id": 19,
+            "title": "Row title",
+            "type": "row"
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 0,
+                "y": 11
+            },
+            "hiddenSeries": false,
+            "id": 2,
+            "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": false,
+                "hideEmpty": true,
+                "hideZero": true,
+                "max": true,
+                "min": true,
+                "show": true,
+                "total": false,
+                "values": true
+            },
+            "lines": true,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "null as zero",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "avg(rate(cadence_latency_sum{kubernetes_namespace=~\"[[namespace]]\",app=\"cadence-frontend\",operation!~\"PollForActivityTask|PollForDecisionTask\"}[5m]) / rate(cadence_latency_count{kubernetes_namespace=~\"[[namespace]]\",app=\"cadence-frontend\",operation!~\"PollForActivityTask|PollForDecisionTask\"}[5m])) by (kubernetes_namespace,app,operation)",
+                    "format": "time_series",
+                    "intervalFactor": 1,
+                    "refId": "A"
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "frontend latency by operation",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 12,
+                "y": 11
+            },
+            "hiddenSeries": false,
+            "id": 4,
+            "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": true,
+                "hideEmpty": true,
+                "hideZero": true,
+                "max": true,
+                "min": true,
+                "show": true,
+                "total": false,
+                "values": true
+            },
+            "lines": true,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "null as zero",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "sum by (operation) (rate(cadence_requests{kubernetes_namespace=~\"[[namespace]]\",app=\"cadence-frontend\",operation!~\"PollForActivityTask|PollForDecisionTask\"}[5m]))",
+                    "format": "time_series",
+                    "intervalFactor": 1,
+                    "refId": "A"
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "cadence requests frontend by operation",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 0,
+                "y": 20
+            },
+            "hiddenSeries": false,
+            "id": 6,
+            "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": true,
+                "hideEmpty": true,
+                "hideZero": true,
+                "max": true,
+                "min": true,
+                "show": true,
+                "total": false,
+                "values": true
+            },
+            "lines": true,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "null as zero",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(syncmatch_latency_bucket{kubernetes_namespace=~\"[[namespace]]\"}[5m])) by (operation, le)) ",
+                    "format": "time_series",
+                    "hide": true,
+                    "interval": "",
+                    "intervalFactor": 1,
+                    "legendFormat": "sync-{{operation}}",
+                    "refId": "A"
+                },
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(asyncmatch_latency_bucket{kubernetes_namespace=~\"[[namespace]]\"}[5m])) by (operation, le)) ",
+                    "format": "time_series",
+                    "hide": true,
+                    "interval": "",
+                    "intervalFactor": 1,
+                    "legendFormat": "async-{{operation}}",
+                    "refId": "B"
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Match latency",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 12,
+                "y": 20
+            },
+            "hiddenSeries": false,
+            "id": 7,
+            "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": true,
+                "hideEmpty": true,
+                "hideZero": true,
+                "max": true,
+                "min": true,
+                "show": true,
+                "total": false,
+                "values": true
+            },
+            "lines": true,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "null as zero",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "sum by (operation, kubernetes_namespace) (rate(syncmatch_latency_count{kubernetes_namespace=\"$namespace\"}[1m])) ",
+                    "format": "time_series",
+                    "intervalFactor": 1,
+                    "legendFormat": "sync-{{operation}}",
+                    "refId": "A"
+                },
+                {
+                    "expr": "sum by (operation, kubernetes_namespace) (rate(asyncmatch_latency_count{kubernetes_namespace=\"$namespace\"}[1m])) * -1",
+                    "format": "time_series",
+                    "intervalFactor": 1,
+                    "legendFormat": "async-{{operation}}",
+                    "refId": "B"
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Match sync\\async rate",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 10,
+                "w": 24,
+                "x": 0,
+                "y": 29
+            },
+            "hiddenSeries": false,
+            "id": 17,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": true,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "null",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "sum by (operation) (rate(persistence_latency_count{operation=\"CreateTask\"}[1m]))",
+                    "format": "time_series",
+                    "hide": true,
+                    "interval": "",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A"
+                },
+                {
+                    "expr": "rate(persistence_latency_sum{operation=\"CreateWorkflowExecution\"}[1m])",
+                    "format": "time_series",
+                    "hide": false,
+                    "interval": "",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "B"
+                },
+                {
+                    "expr": "persistence_latency_count",
+                    "format": "time_series",
+                    "hide": true,
+                    "interval": "",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "C"
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "persistence latency rate",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 0,
+                "y": 39
+            },
+            "hiddenSeries": false,
+            "id": 9,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": true,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "null",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(task_latency_bucket{kubernetes_namespace=~\"[[namespace]]\"}[5m])) by (operation,le))",
+                    "format": "time_series",
+                    "intervalFactor": 1,
+                    "refId": "A"
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Task latency 0.99",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 12,
+                "y": 39
+            },
+            "hiddenSeries": false,
+            "id": 11,
+            "legend": {
+                "alignAsTable": true,
+                "avg": false,
+                "current": true,
+                "max": true,
+                "min": true,
+                "show": true,
+                "total": false,
+                "values": true
+            },
+            "lines": true,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "null",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "sum by (operation) (rate(task_requests[1m]))",
+                    "format": "time_series",
+                    "intervalFactor": 1,
+                    "refId": "A"
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Task requests",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 0,
+                "y": 48
+            },
+            "hiddenSeries": false,
+            "id": 13,
+            "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": true,
+                "max": true,
+                "min": true,
+                "show": true,
+                "total": false,
+                "values": true
+            },
+            "lines": true,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "null",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.99, avg(rate(persistence_latency_bucket{kubernetes_namespace=~\"[[namespace]]\"}[5m])) by (operation,le))",
+                    "format": "time_series",
+                    "intervalFactor": 1,
+                    "refId": "A"
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "persistence latency by operation",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 12,
+                "y": 48
+            },
+            "hiddenSeries": false,
+            "id": 15,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": true,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "null",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "sum by (operation) (rate(persistence_requests{operation=\"CreateTask\"}[1m]))",
+                    "format": "time_series",
+                    "intervalFactor": 1,
+                    "legendFormat": "operation=\"CreateTask\"",
+                    "refId": "A"
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "persistence requests rate",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        }
+    ],
+    "refresh": "10s",
+    "schemaVersion": 22,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+        "list": [
+            {
+                "allValue": null,
+                "current": {
+                    "tags": [],
+                    "text": "perf-nt32",
+                    "value": [
+                        "perf-nt32"
+                    ]
+                },
+                "datasource": "prometheus",
+                "definition": "",
+                "hide": 0,
+                "includeAll": false,
+                "index": -1,
+                "label": null,
+                "multi": true,
+                "name": "namespace",
+                "options": [],
+                "query": "label_values(kubernetes_namespace)",
+                "refresh": 1,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 0,
+                "tagValuesQuery": "",
+                "tags": [],
+                "tagsQuery": "",
+                "type": "query",
+                "useTags": false
+            }
+        ]
+    },
+    "time": {
+        "from": "now-1h",
+        "to": "now"
+    },
+    "timepicker": {
+        "refresh_intervals": [
+            "5s",
+            "10s",
+            "30s",
+            "1m",
+            "5m",
+            "15m",
+            "30m",
+            "1h",
+            "2h",
+            "1d"
+        ],
+        "time_options": [
+            "5m",
+            "15m",
+            "1h",
+            "6h",
+            "12h",
+            "24h",
+            "2d",
+            "7d",
+            "30d"
+        ]
+    },
+    "timezone": "",
+    "title": "Temporal server",
+    "uid": "7vvPQUzMz",
+    "variables": {
+        "list": []
+    },
+    "version": 9
+}
